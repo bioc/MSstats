@@ -49,6 +49,7 @@ transformMSnSetToMSstats  <-  function(ProteinName,
   
   	## extract required information
   	## default : Protein="ProteinAccession",PeptideSequence="PeptideSequence", PrecursorCharge="charge", FragmentIon, ProductCharge ,IsotopeLabelType="mz", Bioreplicate=NA,Run=NA,
+  
   	if (missing(ProteinName)) {
   		ProteinName <- "ProteinAccession"
   	}
@@ -80,7 +81,7 @@ transformMSnSetToMSstats  <-  function(ProteinName,
   	}
   	
   	if (missing(Run)) {
-  		Run <- "fileIdx"
+  		Run <- "file"
   	}
   	
   	if (missing(Condition)) {
