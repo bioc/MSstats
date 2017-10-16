@@ -22,14 +22,6 @@ MaxQtoMSstatsFormat <- function(evidence,
                                 removeOxidationMpeptides=FALSE,
                                 removeProtein_with1Peptide=FALSE){
 	
-    if( is.null(feaMeasurements) ){
-        stop('** Please select \'remove\' or \'keep\' for \'feaMeasurements\'.')
-    }
-    
-    if( !is.element(feaMeasurements, c('remove', 'keep')) ){
-        stop('** Please select \'remove\' or \'keep\' for \'feaMeasurements\'.')
-    }
-    
 	experiment <- "DDA"
 	
 	### evidence.txt file
@@ -66,8 +58,7 @@ MaxQtoMSstatsFormat <- function(evidence,
 
 	### need to check proteinGroupID in evidence and proteinGroup.txt the same
 	### 'id' in proteinGroups.txt vs 'Protein.group.IDs' in infile 
-	### possible to have some combination in Protein.group.IDs in infile, such as 64;1274;1155;1273 instead of 64, 1274.. separately. 
-	### combination of some ids seems not to be used for intensity
+	### possible to have some combination in Protein.group.IDs in infile, such as 64;1274;1155;1273 instead of 64, 1274.. separately. combination of some ids seems not to be used for intensity
 	### 2015/02/03
 	
 	### first, remove contaminants

@@ -126,7 +126,7 @@ SkylinetoMSstatsFormat <- function(input,
             input <- input[-which(input$PeptideSequence %in% remove_peptide$PeptideSequence), ]
         }
     
-        message('** Peptides, that are used in more than one proteins, are removed.')
+        message('Peptides, that are used in more than one proteins, are removed.')
     
     }
   
@@ -167,28 +167,14 @@ SkylinetoMSstatsFormat <- function(input,
     ## check whether the dataset for DDA or not
     input$FragmentIon <- factor(input$FragmentIon)
     checkDDA <- setdiff(c('precursor', 'precursor [M+1]', 'precursor [M+2]'), levels(input$FragmentIon))
-    
-    ## need to check mixed in fragmention column.
-    any.fragment <- setdiff( levels(input$FragmentIon), c('precursor', 'precursor [M+1]', 'precursor [M+2]'))
-    any.precursor3 <- intersect( levels(input$FragmentIon), c('precursor', 'precursor [M+1]', 'precursor [M+2]'))
-    
-    ## if there are fragment ion and also have any 'precursor', it is the issue.
-    if( length(any.fragment) > 0 & length(any.precursor3) > 0){
-        stop("Please check precursors information. If your experiment is DIA, please remove the precursors. If your experiments is DDA, please check the precursor information.")
-    }
-    
+  
     if( length(checkDDA) < 3 ){
     
         DDA <- TRUE
         ## add the column for unique peptide and precursor
         input$pepprecursor <- paste(input$PeptideSequence, input$PrecursorCharge, sep="_")
         input <- input[!is.na(input$Intensity), ]
-        
-        ## keep StandardType information
-        standard.info <- input[, c('ProteinName', 'PeptideSequence', 
-                                   'PrecursorCharge', 'StandardType')]
-        standard.info <- standard.info[!duplicated(standard.info), ]
-        
+
         ## sum of mooisotopic peaks
         ## zero is kept as zero, missing rows replace with NA (fill option)
         data_w <- dcast( pepprecursor ~ Run, data=input, value.var='Intensity', fun.aggregate=function(x) sum(x, na.rm=TRUE), fill=NA_real_) 
@@ -207,6 +193,7 @@ SkylinetoMSstatsFormat <- function(input,
             annotinfo <- annotation
         }
     	
+    
         input <- merge(newdata, uniinfo, by="pepprecursor")
     
         ## assign the annotation
@@ -218,11 +205,8 @@ SkylinetoMSstatsFormat <- function(input,
         input$ProductCharge <- NA
         input$IsotopeLabelType <- "L"
         
-        ## merge standard type information
-        input <- merge(input, standard.info, all=TRUE)
-        
         input.final <- data.frame(ProteinName = input$ProteinName,
-                                  PeptideSequence = input$PeptideSequence,
+                                  PeptideModifiedSequence = input$PeptideSequence,
                                   PrecursorCharge = input$PrecursorCharge,
                                   FragmentIon = input$FragmentIon,
                                   ProductCharge = input$ProductCharge,
@@ -230,8 +214,7 @@ SkylinetoMSstatsFormat <- function(input,
                                   Condition = input$Condition,
                                   BioReplicate = input$BioReplicate,
                                   Run = input$Run,
-                                  Intensity = input$Intensity,
-                                  StandardType = input$StandardType)
+                                  Intensity = input$Intensity)
         
         if( any(is.element(colnames(input), 'Fraction')) ) {
             input.final <- data.frame(input.final,
@@ -255,8 +238,6 @@ SkylinetoMSstatsFormat <- function(input,
         stop('** Please check annotation for Condition and BioReplicat column. There is missing information.')	
     } else if( missing.annotation & !is.null(annotation) ){
         annotinfo <- annotation
-        
-        input <- input[, -which(colnames(input) %in% c('Condition', 'BioReplicate'))]
     
         ## assign the annotation
         ## merge it by Run
@@ -277,11 +258,6 @@ SkylinetoMSstatsFormat <- function(input,
             input.final <- data.frame(input.final,
                                   Fraction = input$Fraction)
         }
-        
-        if( any(is.element(colnames(input), 'DetectionQValue')) ) {
-            input.final <- data.frame(input.final,
-                                      DetectionQValue = input$DetectionQValue)
-        }
     
         input <- input.final
         rm(input.final)
@@ -293,10 +269,7 @@ SkylinetoMSstatsFormat <- function(input,
 	
 	if(removeProtein_with1Peptide){
 	    ######## remove protein which has only one peptide
-	    input$feature <- paste(input$PeptideSequence, 
-	                           input$PrecursorCharge, 
-	                           input$FragmentIon, 
-	                           input$ProductCharge, sep="_")
+	    input$feature <- paste(input$PeptideSequence, input$PrecursorCharge, input$FragmentIon, input$ProductCharge, sep="_")
 	  
 	    tmp <- unique(input[, c("ProteinName", 'feature')])
 	    tmp$ProteinName <- factor(tmp$ProteinName)
@@ -336,7 +309,7 @@ SkylinetoMSstatsFormat <- function(input,
         }
     }
   
-    input$ProteinName <- factor(input$ProteinName)
+    input$ProteinName <- input$ProteinName
   
 	return(input)
 }
